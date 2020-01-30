@@ -1,96 +1,62 @@
 <?
 	/*** Класс Фермы ***/
-	interface CowFarm // Интерфейс для фермы с Коровами
+	interface Farm // Интерфейс для фермы
 	{
-		public function addCow($count = null); //Добавить новую Корову
-		public function getCows(); //Получить стадо Коров
+		public function addAnimal($animal,$count = 1); //Добавление животного
+		public function getAnimals(); //Получение всех животных
+		public function harvesting(); //Сбор продукции
 	}
-	interface ChickenFarm	//Анологично для Кур
+	class StandartFarm implements Farm//Ферма с Коровами и Курами
 	{
-		public function addChicken($count = null);
-		public function getChickens();
-	}
-	class StandartFarm implements CowFarm,ChickenFarm //Ферма с Коровами и Курами
-	{
-		/* Переменные, относящиеся к курам, коровам (Их общее количество, Массив с их объектами)
-		* Мог вынести в отдельные классы (например, Курятник, Стадо и т.д) для удобства в последующем использовании,
-		* Но времени не было, поэтому оставил так */
 		protected $farmer;	//Фермер, обслуживающий ферму
-		protected $countCow;	//Количество Коров
-		protected $countChicken;	//Количество Кур 
-		protected $cowFabrik;		//Фабрика для поставки новых Коров
-		protected $chickenFabrik;	//Фабрика для поставки новых Кур
-		protected $cows;	//Массив с Коровами (Коровник)
-		protected $chickens;	//Массив с Курами (Курятник)
-		protected $milkPack;	//Все запасы Молока на Ферме. Помещаем их в одну упаковку
-		protected $eggPack;		//Все запасы Яиц на Ферме.
-		function __construct($countCow,$countChicken)
+		protected $animalFabrik; //Фабрика, поставляющая животных
+		protected $animals = array(); //Животные на ферме
+		protected $products = array(); //Продукция на складе в виде массива с PackProduct
+		function __construct()
 		{
-			$this->countCow = $countCow;	//Указываем начальное количество Коров
-			$this->countChicken = $countChicken;	//Указываем начальное количество Кур
-			$this->milkPack = new MilkPack(0);	//Упаковка с Молоком на складе пуста
-			$this->eggPack = new EggPack(0);	//Упаковка с Яйцами на складе пуста
-			$this->cowFabrik = new CowFabrik();	
-			$this->chickenFabrik = new ChickenFabrik();
-			$this->farmer = new StandartFarmer($this);	//Создаем Фермера, обслуживающего данный тип фермы
-			$this->cows = $this->cowFabrik->makeAnimal($countCow);	//Поставляем Коров с Фабрики
-			$this->chickens = $this->chickenFabrik->makeAnimal($countChicken);	//Поставляем Кур с Фабрики
+			$this->farmer = new Farmer($this);	//Создаем Фермера, обслуживающего данный тип фермы
+			$this->animalFabrik = new StandartAnimalFabrik(); // Создаем Фабрику, для производства новых животных
 		}
-		public function addChicken($count = null) //Добавление дополнительных Кур
+		public function addAnimal($animal,$count = 1) //Добавление животных
 		{
-			if(is_null($count))//Не передав количество, создаем 1 Курицу
+			$this->animalFabrik->setAnimal($animal); //Указываем фабрике, какое животное поставлять
+			$nameAnimal = $animal->getName();	//Получаем имя животного
+			$newAnimals = $this->animalFabrik->makeAnimal($count);	//Получаем с фабрики животных
+			if(array_search($nameAnimal,array_keys($this->animals))===FALSE)//Если у нас нет таких животных на ферме, добавляем вложенный массив для них
+				$this->animals[$nameAnimal] = array();
+			$this->animals[$nameAnimal] = array_merge($this->animals[$nameAnimal],$newAnimals);//Добавляем новых животных
+		}
+		public function harvesting() //Сбор урожая
+		{
+			$harvestedProductions = $this->farmer->getCropProduct(); //Получаем от фермера всю продукцию
+			$nameHarvestedProduct = array_keys($harvestedProductions); //Получаем наименования собранной продукции
+			foreach ($nameHarvestedProduct as $nameProduct) //Проходимся по массиву с собранной продукцией 
 			{
-				$this->chickens[] = $this->chickenFabrik->makeAnimal(); //Добавляем Курицу в курятник(массив)
-				$this->countChicken++;	//Увеличиваем количество Кур на 1
-			}
-			else
-			{
-				//Добавляем несколько Кур в курятник
-				$this->chickens = array_merge($this->chickens,$this->chickenFabrik->makeAnimal($count));
-				//Увеличиваем количество Кур на Ферме
-				$this->countChicken += $count;
+				if(empty($this->products[$nameProduct])) //Если на складе нет такой продукции, добавляем вложенный массив
+					$this->products[$nameProduct] = $harvestedProductions[$nameProduct];
+				else //Иначе, просто добавляем необходимое количество
+					$this->products[$nameProduct]->addCount($harvestedProductions[$nameProduct]->getCount());
 			}
 		}
-		public function addCow($count = null)// Аналогично
+		public function getAnimals():array
 		{
-			if(is_null($count))
-			{
-				$this->cows[] = $this->cowFabrik->makeAnimal();
-				$this->countCow++;
-			}
-			else
-			{
-				$this->cows = array_merge($this->cows,$this->cowFabrik->makeAnimal($count));
-				$this->countCow += $count;
-			}
-		}
-		public function harvesting() // Функция сбора урожая
-		{
-			$this->milkPack->setCount(	//Задаем кол-во Молока на складе
-				$this->milkPack->getCount() + //Поулчаем текущее кол-во Молока на складе 
-				$this->farmer->harvestMilk()->getCount()); //Прибавляем собранное Молоко Фермером
-			//Аналогично
-			$this->eggPack->setCount(
-				$this->eggPack->getCount() + 
-				$this->farmer->harvestEgg()->getCount());
-		}
-		public function getCows():array //Передача стада (Фермеру)
-		{
-			return $this->cows;
-		}
-		public function getChickens():array //Передача курятника (Фермеру)
-		{
-			return $this->chickens;
+			return $this->animals;
 		}
 		public function toString()
 		{
-			echo "------------------------------------------------------\n";
-			echo "-Животные\n\n";
-			echo "Коров: ".$this->countCow."\n";
-			echo "Кур: ".$this->countChicken."\n\n";
+			echo "--------------------\n";
+			echo "-Животные\n";
+			foreach ($this->animals as $group) 
+			{
+				echo " ∟ ".$group[0]->getName().": ".count($group)."\n";
+			}
+			echo "--------------------\n";
 			echo "-Продукция на складе\n";
-			$this->milkPack->toString();
-			$this->eggPack->toString();
+			foreach ($this->products as $pack) 
+			{
+				$product = $pack->getProduct();
+				echo " ∟ ".$product->getName().": ".$pack->getCount()." ".$product->getUnit()."\n";
+			}
 		}
 	}
 

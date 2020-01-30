@@ -17,10 +17,13 @@
 		{
 			$this->name = $name;
 			$this->product = $product;
-			$this->regNumber = ++self::$lastUniqueNumber;
 			$this->lowerLimitProduct = $lowerLimitProduct;
 			$this->upperLimitProduct = $upperLimitProduct;
 		}
+		function __clone()//Создание копии необходимого животного
+	    {
+	        $this->regNumber = ++self::$lastUniqueNumber; // Увеличиваем регистрационный номер на 1 при клонировании
+	    }
 		/*  Животное выдает продукт в виде упаковки (Молоко, 10)
 		*	с каким-либо его количеством. 
 		*	Количество генерируется рандомно в заданном диапозоне. 
@@ -33,6 +36,10 @@
 		{
 			return $this->product;
 		}
+		public function getName()
+		{
+			return $this->name;
+		}
 		public function toString()
 		{
 			echo "\nЖивотное: ".$this->name;
@@ -43,22 +50,32 @@
 	}
 	class Cow extends Animal // Класс Корова
 	{
-		public function __construct($product) 
+		public function __construct() 
 		{
 			parent::__construct("Корова",//Название животного
-				$product,
+				new Milk(),
 				8,	//Мин. количество производимого продукта
 				12); //Макс. количество производимого продукта
 		}
 	}
 	class Chicken extends Animal // Аналогично
 	{
-		public function __construct($product) 
+		public function __construct() 
 		{
 			parent::__construct("Курица",
-				$product,
+				new Egg(),
 				0,
 				1);
+		}
+	}
+	class Pig extends Animal
+	{
+		public function __construct()
+		{
+			parent::__construct("Свинья",
+			new Meat(),
+			5,
+			8);
 		}
 	}
 ?>

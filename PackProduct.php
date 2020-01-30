@@ -22,25 +22,15 @@
 		{
 			$this->count = $count;
 		}
+		public function addCount($count)
+		{
+			$this->count += $count;
+		}
 		public function toString()	//Вывод информации о упаковке (Продукт, количество)
 		{
 			echo "\nПродукт: ".$this->product->getName();
 			echo "\nКоличество: ".$this->count." ".$this->product->getUnit();
 			echo "\n";
-		}
-	}
-	class MilkPack extends PackProduct //Упаковка с молоком
-	{
-		function __construct($count)
-		{
-			parent::__construct(new Milk(),$count);
-		}
-	}
-	class EggPack extends PackProduct //Упаковка с яйцами
-	{
-		function __construct($count)
-		{
-			parent::__construct(new Egg(),$count);
 		}
 	}
 ?>

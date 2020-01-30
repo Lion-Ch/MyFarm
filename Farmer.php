@@ -1,7 +1,7 @@
 <?
 	/*** Класс Фермера.  ***/
 	/* Осуществляет сбор продуктов с животных */
-	abstract class Farmer
+     class Farmer
 	{
 		protected $farm; //Ферма к которой привязан Фермер
 		function __construct($farm)
@@ -9,33 +9,26 @@
 			$this->farm = $farm;
 		}
 		/*Возвращает количество урожая, которое дает один тип животных на ферме */
-		public function getCropProduct($animals):PackProduct 
+		public function getCropProduct():array 
 		{
-			$count = 0;
-			$productAnimal = $animals[0]->getProduct();
-			foreach ($animals as $animal) 
+			$products = array();	//Массив с собранной продукцией
+			$groupAnimal = $this->farm->getAnimals();	//Получаем массив Животных с Фермы
+			foreach ($groupAnimal as $group) //Проходимся по типам животных
 			{
-				$packProduct = $animal->getCrop();
-				$count += $packProduct->getCount();
+				foreach ($group as $animal) 
+				{
+					$packProductAnimal = $animal->getCrop(); //Получаем продукцию с животного
+					$product = $packProductAnimal->getProduct();	//Получаем продукт
+					$nameProduct = $packProductAnimal->getProduct()->getName(); //Его наименование
+					$countProduct = $packProductAnimal->getCount();	//Его количество
+					
+					if(array_search($nameProduct, array_keys($products))===FALSE)//Если в собранной продукции нет такого продукта, то создаем упаковку
+						$products[$nameProduct] = new PackProduct($product,$countProduct);
+					else //Если есть, просто добавляем необходимое количество
+						$products[$nameProduct]->addCount($countProduct);
+				}
 			}
-			// Возвращаем упаковку продукта, 
-			//которую собрали с указанных животных
-			return new PackProduct($productAnimal,$count); 
-		}
-	}
-	class StandartFarmer extends Farmer // Фермер для работы на ферме с коровами и курами
-	{
-		function __construct($farm)
-		{
-			parent::__construct($farm);
-		}
-		public function harvestMilk():PackProduct //Доим всех коров и возвращаем упаковку с Молоком
-		{
-			return $this->getCropProduct($this->farm->getCows());
-		}
-		public function harvestEgg():PackProduct //Собираем яйца у кур и возвращаем упаковку с Яйцами
-		{
-			return $this->getCropProduct($this->farm->getChickens());
+			return $products; 
 		}
 	}
 ?>

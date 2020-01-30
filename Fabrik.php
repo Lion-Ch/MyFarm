@@ -2,40 +2,28 @@
 	/*** Фабрики для создания животных ***/
 	interface AnimalFabrik //Интерфейс фабрики
 	{
-		public function makeAnimal($count = null);
+		public function setAnimal($animal);
+		public function makeAnimal($count);
 	}
-	class ChickenFabrik implements AnimalFabrik // Фабрика куриц
+	class StandartAnimalFabrik implements AnimalFabrik
 	{
-		public function makeAnimal($count = null)
+		protected $animal; //Животное, которое создает фабрика
+		function __construct($animal = null)
 		{
-			if(is_null($count)) //Если ничего не передали в функцию возвращаем 1 Курицу
-			{
-				return new Chicken(new Egg());
-			}
-			else //При передаче числа в функцию, возвращаем массив с указанным количеством Куриц
-			{
-				$animals = array();
-				for($i = 0; $i < $count;$i++)
-					$animals[] = new Chicken(new Egg());
-				return $animals;
-			}
+			$this->animal = $animal;
 		}
-	}
-	class CowFabrik implements AnimalFabrik // Аналогично
-	{
-		public function makeAnimal($count = null)
+		public function setAnimal($animal)
 		{
-			if(is_null($count))
+			$this->animal = $animal;
+		}
+		public function makeAnimal($count)
+		{
+			$animals = array();
+			for($i = 0; $i < $count;$i++)
 			{
-				return new Cow(new Milk());
+				$animals[] = clone $this->animal;
 			}
-			else
-			{
-				$animals = array();
-				for($i = 0; $i < $count;$i++)
-					$animals[] = new Cow(new Milk());
-				return $animals;
-			}
+			return $animals;
 		}
 	}
 ?>

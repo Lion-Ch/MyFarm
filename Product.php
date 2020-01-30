@@ -18,11 +18,25 @@
 			return $this->unit;
 		}
 	}
-	class Egg extends Product     //Продукт Яйцо для курицы
+	class Milk extends Product    //Продукт Молоко для Коровы
+	{
+		public function __construct() 
+		{
+			parent::__construct("Молоко","л");	//Имя продукта
+		}
+	}
+	class Egg extends Product     //Продукт Яйцо для Курицы
 	{
 		public function __construct() 
 		{
 			parent::__construct("Яйцо","шт."); //Имя продукта
+		}
+	}
+	class Meat extends Product // Продукт Мясо для Свиньи
+	{
+		function __construct()
+		{
+			parent::__construct("Мясо","кг."); //Имя продукта
 		}
 	}
 ?>

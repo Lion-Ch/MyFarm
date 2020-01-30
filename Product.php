@@ -18,13 +18,6 @@
 			return $this->unit;
 		}
 	}
-	class Milk extends Product    //Продукт Молоко для коровы
-	{
-		public function __construct() 
-		{
-			parent::__construct("Молоко","л");	//Имя продукта
-		}
-	}
 	class Egg extends Product     //Продукт Яйцо для курицы
 	{
 		public function __construct() 
